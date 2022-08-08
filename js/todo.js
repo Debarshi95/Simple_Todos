@@ -1,6 +1,7 @@
 const inputEl = document.querySelector("input")
 const todoContainer = document.querySelector(".todo-container")
 const addTodoBtn = document.querySelector("button")
+const noTodoText = document.querySelector("#no-todo-text")
 
 const docFragment = new DocumentFragment()
 
@@ -38,7 +39,9 @@ addTodoBtn.addEventListener("click", function () {
     const todoItem = createTodo(todo)
     docFragment.appendChild(todoItem)
     todoContainer.appendChild(docFragment)
+    todoContainer.classList.add("padding-xs")
     inputEl.value = ""
+    noTodoText.classList.add("d-none")
   }
 })
 
@@ -62,5 +65,9 @@ const deleteTodo = (targetNode) => {
   const { parentNode } = targetNode || null
   if (parentNode) {
     todoContainer.removeChild(parentNode)
+  }
+  if (!todoContainer.childNodes.length) {
+    todoContainer.classList.remove("padding-xs")
+    noTodoText.classList.remove("d-none")
   }
 }

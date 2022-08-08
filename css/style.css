@@ -1,10 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&display=swap");
 
 :root {
-  --primary-color: red;
-  --bg-color: pink;
-  --secondary-color: blue;
+  --primary-color: #f25278;
+  --secondary-color: rgb(20, 20, 235);
   --text-primary: #fff;
+  --border-color: #bdbdbd;
 }
 * {
   box-sizing: border-box;
@@ -14,19 +14,20 @@
 }
 
 body {
-  min-height: 100vh;
+  min-height: calc(100vh - 1.5rem);
   width: 100%;
-  background-color: var(--bg-color);
+  background-color: var(--primary-color);
 }
 
 .header-text {
   width: 100%;
   text-align: center;
   margin: 1.5rem 0;
+  color: var(--text-primary);
 }
 .container {
   margin: 0 auto;
-  width: 30rem;
+  max-width: 25rem;
 }
 
 .input-container {
@@ -49,8 +50,55 @@ body {
   color: var(--secondary-color);
   font-weight: 600;
   font-size: 1.05rem;
+  margin-right: 8px;
+  cursor: pointer;
 }
 .todo-container {
-  min-height: 20rem;
-  background-color: red;
+  background-color: var(--text-primary);
+  margin: 1.5rem auto;
+}
+
+.todo {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.todo button {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 8px;
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+  border: 0;
+  outline: none;
+  cursor: pointer;
+}
+.todo input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+.todo p {
+  font-size: 1.15rem;
+  flex: 1;
+  word-break: break-all;
+  color: gray;
+  margin-bottom: 8px;
+}
+p.text-through {
+  text-decoration: line-through;
+  color: var(--primary-color);
+}
+
+.d-none {
+  display: none;
+}
+
+.d-block {
+  display: block;
+}
+.padding-xs {
+  padding: 1.5rem;
 }
