@@ -12,6 +12,26 @@ const validInput = () => {
   return true
 }
 
+const createTodo = (todo) => {
+  const divRoot = document.createElement("div")
+  divRoot.classList.add("todo")
+
+  const deleteTodoBtn = document.createElement("button")
+  deleteTodoBtn.textContent = "X"
+
+  const selectTodoCheckbox = document.createElement("input")
+  selectTodoCheckbox.type = "checkbox"
+  selectTodoCheckbox.checked = todo.isCompleted
+
+  const todoTextEl = document.createElement("p")
+  todoTextEl.textContent = todo.text
+
+  divRoot.appendChild(deleteTodoBtn)
+  divRoot.appendChild(selectTodoCheckbox)
+  divRoot.appendChild(todoTextEl)
+  return divRoot
+}
+
 addTodoBtn.addEventListener("click", function () {
   if (validInput()) {
     const todo = { id: new Date(), text: inputEl.value, isCompleted: false }
@@ -22,21 +42,25 @@ addTodoBtn.addEventListener("click", function () {
   }
 })
 
-const createTodo = (todo) => {
-  const divRoot = document.createElement("div")
-  divRoot.classList.add("todo")
+todoContainer.addEventListener("click", function (event) {
+  const { tagName } = event.target
 
-  const deleteTodoBtn = document.createElement("button")
-  deleteTodoBtn.textContent = "X"
+  if (tagName === "INPUT") {
+    return toggleTodoCompleted(event.target)
+  }
+  if (tagName === "BUTTON") {
+    return deleteTodo(event.target)
+  }
+})
 
-  const selectTodoCheckbox = document.createElement("input")
-  selectTodoCheckbox.setAttribute("type", "checkbox")
+const toggleTodoCompleted = (targetNode) => {
+  const { lastChild } = targetNode?.parentNode || null
+  lastChild?.classList?.toggle("text-through")
+}
 
-  const todoTextEl = document.createElement("p")
-  todoTextEl.textContent = todo.text
-
-  divRoot.appendChild(deleteTodoBtn)
-  divRoot.appendChild(selectTodoCheckbox)
-  divRoot.appendChild(todoTextEl)
-  return divRoot
+const deleteTodo = (targetNode) => {
+  const { parentNode } = targetNode || null
+  if (parentNode) {
+    todoContainer.removeChild(parentNode)
+  }
 }
