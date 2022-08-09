@@ -58,15 +58,7 @@ body {
   margin: 1.5rem auto;
 }
 
-.todo {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.todo button {
+.todo-container button {
   min-width: 1.5rem;
   height: 1.5rem;
   margin-right: 8px;
@@ -78,6 +70,13 @@ body {
   font-weight: 600;
 }
 
+.todo {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
 .todo button:last-child {
   padding: 0 10px;
 }
@@ -96,13 +95,14 @@ body {
   flex: 1;
   word-break: break-all;
   color: gray;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 p.text-through {
   text-decoration: line-through;
   color: var(--primary-color);
 }
 
+/* Utility classes */
 .d-none {
   display: none;
 }
@@ -112,4 +112,10 @@ p.text-through {
 }
 .padding-xs {
   padding: 1rem;
+}
+
+.clear-btn {
+  margin: 1rem 1rem 0.4rem auto;
+  display: block;
+  padding: 0 1rem;
 }

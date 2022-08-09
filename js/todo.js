@@ -1,9 +1,12 @@
 const inputEl = document.querySelector("input")
-const todoContainer = document.querySelector(".todo-container")
+const cardContainer = document.querySelector(".todo-container")
+const todoWrapper = document.querySelector("#todo-wrapper")
 const addTodoBtn = document.querySelector("button")
 const noTodoText = document.querySelector("#no-todo-text")
 
 const docFragment = new DocumentFragment()
+
+let previousTodo
 
 // Validate input box
 const validInput = (value = "") => {
@@ -16,9 +19,29 @@ const validInput = (value = "") => {
 
 // Creates a todo item
 const createTodo = (todo) => {
+  const onDragStart = function (event) {
+    event.dataTransfer.dropEffect = "move"
+    previousTodo = this
+  }
+
+  const onDragOver = function (e) {
+    e.preventDefault()
+  }
+
+  const onDrop = function (e) {
+    const currentTodo = e.currentTarget
+    todoWrapper.replaceChild(currentTodo, previousTodo)
+    todoWrapper.appendChild(previousTodo)
+  }
+
   const divRoot = document.createElement("div")
+  divRoot.setAttribute("data-id", todo.id)
   divRoot.classList.add("todo")
   divRoot.setAttribute("draggable", true)
+
+  divRoot.addEventListener("dragstart", onDragStart)
+  divRoot.addEventListener("dragover", onDragOver)
+  divRoot.addEventListener("drop", onDrop)
 
   const deleteTodoBtn = document.createElement("button")
   deleteTodoBtn.textContent = "X"
@@ -42,38 +65,6 @@ const createTodo = (todo) => {
   return divRoot
 }
 
-addTodoBtn.addEventListener("click", function () {
-  if (validInput(inputEl.value)) {
-    const todo = { id: new Date(), text: inputEl.value, isCompleted: false }
-    const todoItem = createTodo(todo)
-
-    docFragment.appendChild(todoItem)
-    todoContainer.appendChild(docFragment)
-
-    todoContainer.classList.add("padding-xs")
-    inputEl.value = ""
-
-    noTodoText.classList.add("d-none")
-  }
-})
-
-todoContainer.addEventListener("click", function (event) {
-  const { tagName, id } = event.target
-
-  if (tagName === "INPUT") {
-    return toggleTodoCompleted(event.target)
-  }
-  if (tagName === "BUTTON" && id === "delete-todo") {
-    return deleteTodo(event.target)
-  }
-  if (tagName === "BUTTON" && id === "edit-todo") {
-    return createUpdateTodoElements(event.target)
-  }
-  if (tagName === "BUTTON" && id === "update-todo") {
-    return updateTodo(event.target)
-  }
-})
-
 const toggleTodoCompleted = (targetNode) => {
   const { nextSibling = null } = targetNode
 
@@ -87,11 +78,11 @@ const deleteTodo = (targetNode) => {
   const { parentNode = null } = targetNode
 
   if (parentNode) {
-    todoContainer.removeChild(parentNode)
+    todoWrapper.removeChild(parentNode)
   }
 
-  if (!todoContainer.childNodes.length) {
-    todoContainer.classList.remove("padding-xs")
+  if (!todoWrapper.childNodes.length) {
+    cardContainer.classList.add("d-none")
     noTodoText.classList.remove("d-none")
   }
 }
@@ -135,6 +126,57 @@ const updateTodo = (targetNode) => {
 
     docFragment.appendChild(todoItem)
 
-    todoContainer.replaceChild(docFragment, parentNode)
+    todoWrapper.replaceChild(docFragment, parentNode)
   }
 }
+
+const handleAddTodo = () => {
+  if (validInput(inputEl.value)) {
+    const todo = {
+      id: new Date().getSeconds(),
+      text: inputEl.value,
+      isCompleted: false,
+    }
+
+    const todoItem = createTodo(todo)
+
+    todoWrapper.parentNode.classList.remove("d-none")
+    docFragment.appendChild(todoItem)
+    todoWrapper.appendChild(docFragment)
+
+    cardContainer.classList.add("padding-xs")
+    inputEl.value = ""
+
+    noTodoText.classList.add("d-none")
+  }
+}
+
+const clearAllTodos = () => {
+  todoWrapper.innerHTML = ""
+  cardContainer.classList.remove("padding-xs")
+  noTodoText.classList.remove("d-none")
+  cardContainer.classList.add("d-none")
+}
+
+const handleOnTodoClick = (event) => {
+  const { tagName, id } = event.target
+
+  if (tagName === "INPUT") {
+    return toggleTodoCompleted(event.target)
+  }
+  if (tagName === "BUTTON" && id === "delete-todo") {
+    return deleteTodo(event.target)
+  }
+  if (tagName === "BUTTON" && id === "edit-todo") {
+    return createUpdateTodoElements(event.target)
+  }
+  if (tagName === "BUTTON" && id === "update-todo") {
+    return updateTodo(event.target)
+  }
+  if (tagName === "BUTTON" && id === "clear") {
+    return clearAllTodos()
+  }
+}
+
+addTodoBtn.addEventListener("click", handleAddTodo)
+cardContainer.addEventListener("click", handleOnTodoClick)
