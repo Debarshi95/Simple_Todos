@@ -71,25 +71,36 @@ const createTodo = (todo) => {
   const todoTextEl = document.createElement("p")
   todoTextEl.textContent = todo.text
 
-  divRoot.appendChild(deleteTodoBtn)
-  divRoot.appendChild(selectTodoCheckbox)
-  divRoot.appendChild(todoTextEl)
-  divRoot.appendChild(editTodoBtn)
+  const todoFragment = new DocumentFragment()
+
+  todoFragment.appendChild(deleteTodoBtn)
+  todoFragment.appendChild(selectTodoCheckbox)
+  todoFragment.appendChild(todoTextEl)
+  todoFragment.appendChild(editTodoBtn)
+
+  divRoot.appendChild(todoFragment)
   return divRoot
 }
 
 // Toggles a todos' checked and un-checked state
 const toggleTodoCompleted = (targetNode) => {
-  const { nextSibling = null } = targetNode
+  const { nextSibling = null, parentNode = null } = targetNode || {}
+  const todoId = parentNode?.getAttribute("data-id")
 
-  if (nextSibling && nextSibling.tagName === "P") {
-    nextSibling.classList.toggle("text-through")
+  if (todoId) {
+    const currentTodoIdx = todos.findIndex((todo) => todo.id === Number(todoId))
+    todos[currentTodoIdx].isCompleted = !todos[currentTodoIdx].isCompleted
+
+    if (nextSibling && nextSibling.tagName === "P") {
+      nextSibling.classList.toggle("text-through")
+    }
   }
+  console.log(todos)
 }
 
 // Deletes a todo from the DOM
 const deleteTodo = (targetNode) => {
-  const { parentNode = null } = targetNode
+  const { parentNode = null } = targetNode || {}
 
   if (parentNode) {
     todos = todos.filter(
@@ -106,7 +117,7 @@ const deleteTodo = (targetNode) => {
 
 // Creates input todo nodes to edit the current todo
 const createUpdateTodoElements = (targetNode) => {
-  const { parentNode = null, previousSibling = "" } = targetNode
+  const { parentNode = null, previousSibling = "" } = targetNode || {}
 
   if (parentNode && previousSibling?.tagName === "P") {
     const updateTodoInputEl = document.createElement("input")
@@ -130,7 +141,7 @@ const createUpdateTodoElements = (targetNode) => {
 
 // Updates the current todo and attaches into the DOM
 const updateTodo = (targetNode) => {
-  const { parentNode = null, previousSibling = null } = targetNode
+  const { parentNode = null, previousSibling = null } = targetNode || {}
 
   if (validInput(previousSibling.value) && parentNode) {
     const currentTodo = todos.find(
