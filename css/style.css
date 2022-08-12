@@ -19,6 +19,10 @@ body {
   background-color: var(--primary-color);
 }
 
+body li {
+  list-style-type: none;
+}
+
 .header-text {
   width: 100%;
   text-align: center;
@@ -75,9 +79,17 @@ body {
   width: 100%;
   align-items: center;
   padding: 1rem 0;
+}
+
+.todo.sub-todo-input {
+  padding: 0 0 1rem 1rem;
+}
+
+.todo-border {
   border-bottom: 1px solid var(--border-color);
 }
-.todo button:last-child {
+
+.todo button {
   padding: 0 10px;
 }
 
@@ -91,15 +103,25 @@ body {
   outline: none;
 }
 .todo p {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   flex: 1;
   word-break: break-all;
   color: gray;
   margin-bottom: 4px;
+  text-align: start;
+  padding: 0 8px;
 }
+
 p.text-through {
   text-decoration: line-through;
   color: var(--primary-color);
+}
+
+.todo-border .todo-border:last-child {
+  border: 0;
+}
+.sub-todo-wrapper {
+  padding-left: 10px;
 }
 
 /* Utility classes */
@@ -118,4 +140,11 @@ p.text-through {
   margin: 1rem 1rem 0.4rem auto;
   display: block;
   padding: 0 1rem;
+}
+
+.invisible {
+  visibility: hidden;
+}
+.padding-bottom-0 {
+  padding-bottom: 0;
 }
