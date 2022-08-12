@@ -1,10 +1,12 @@
 import todos from "./constant.js"
 
-import createTodoBase from "./components/todoBase.js"
-import createTodoRoot from "./components/todoRoot.js"
-import createTodoCheckbox from "./components/todoCheckbox.js"
-import createTodoButton from "./components/todoButton.js"
-import createTodoInput from "./components/todoInput.js"
+import {
+  createTodoBase,
+  createTodoRoot,
+  createTodoButton,
+  createTodoCheckbox,
+  createTodoInput,
+} from "./components/index.js"
 
 import {
   inputEl,
@@ -13,7 +15,11 @@ import {
   noTodoText,
   todoWrapper,
 } from "./selectors.js"
-import { validateInput } from "./utils/helperfuncs.js"
+import {
+  findTodo,
+  getFilteredTodos,
+  validateInput,
+} from "./utils/helperfuncs.js"
 
 // Creates todo nodes and attaches listeners to parent node
 const createTodoNodes = (todo, draggable, includeChildTodos) => {
@@ -33,7 +39,6 @@ const createTodoNodes = (todo, draggable, includeChildTodos) => {
   deleteTodoBtn.setAttribute("id", "delete-todo")
 
   const editTodoBtn = createTodoButton({ textContent: "EDIT" })
-  editTodoBtn.textContent = "EDIT"
   editTodoBtn.setAttribute("id", "edit-todo")
 
   const addSubTodoBtn = createTodoButton({ textContent: "New Todo" })
@@ -59,11 +64,11 @@ const createTodoNodes = (todo, draggable, includeChildTodos) => {
 // Toggles a todos' checked and un-checked state
 const toggleTodoCompleted = (targetNode) => {
   const { nextSibling = null } = targetNode || {}
-  const todoId = targetNode?.closest("div.todo-border")?.getAttribute("data-id")
+  const todoId = targetNode?.closest("li.todo-border")?.getAttribute("data-id")
 
   if (todoId) {
-    const currentTodoIdx = todos.findIndex((todo) => todo.id === Number(todoId))
-    todos[currentTodoIdx].isCompleted = !todos[currentTodoIdx].isCompleted
+    const currentTodo = findTodo(todos, Number(todoId))
+    currentTodo.isCompleted = !currentTodo.isCompleted
 
     if (nextSibling && nextSibling.tagName === "P") {
       nextSibling.classList.toggle("text-through")
@@ -73,14 +78,12 @@ const toggleTodoCompleted = (targetNode) => {
 
 // Deletes a todo from the DOM
 const deleteTodo = (targetNode) => {
-  const { parentNode = null } = targetNode || {}
-
-  if (parentNode) {
-    const filteredTodos = todos.filter(
-      (todo) => todo.id !== Number(parentNode.getAttribute("data-id")),
-    )
+  const todoId = targetNode?.closest("li.todo-border")?.getAttribute("data-id")
+  if (todoId) {
+    const filteredTodos = getFilteredTodos(todos, Number(todoId))
     todos.length = 0
     todos.push(...filteredTodos)
+    todoWrapper.innerHTML = ""
     render()
   }
 
@@ -115,10 +118,12 @@ const renderUpdateTodoNodes = (targetNode) => {
   }
 }
 
+// Creates Child Todo items
 const handleCreateChildTodo = (event) => {
-  const { previousSibling = null } = event.currentTarget
+  const currentNode = event.currentTarget
+  const { previousSibling = null, parentNode } = currentNode
 
-  const rootTodoNode = event.currentTarget?.closest("div.todo-border")
+  const rootTodoNode = event.currentTarget?.closest("li.todo-border")
 
   if (validateInput(previousSibling.value) && rootTodoNode) {
     const currentTodo = todos.find(
@@ -133,21 +138,18 @@ const handleCreateChildTodo = (event) => {
       }
       currentTodo.children.push(newTodo)
 
-      const subTodoParentNode = event.currentTarget?.closest(
-        "div.sub-todo-wrapper",
-      )
-      render(subTodoParentNode, currentTodo.children, false, false)
+      render()
     }
   }
 }
+
+// Create child todo input items
 const renderCreateChildTodoNodes = (targetNode) => {
   const { parentNode = null } = targetNode || {}
 
   if (parentNode) {
-    const childBase = createTodoBase({}, { classList: ["sub-todo-wrapper"] })
-
     const childRoot = document.createElement("div")
-    childRoot.classList.add("todo", "sub-todo")
+    childRoot.classList.add("todo", "sub-todo-input")
 
     const childTodoInputEl = createTodoInput()
     childTodoInputEl.placeholder = "sub task"
@@ -161,28 +163,27 @@ const renderCreateChildTodoNodes = (targetNode) => {
     fragment.append(childTodoInputEl, childTodoBtnEl)
 
     childRoot.appendChild(fragment)
-    childBase.appendChild(childRoot)
 
     const todoRootNode = parentNode.parentNode
-    todoRootNode.appendChild(childBase)
+    todoRootNode.appendChild(childRoot)
   }
 }
 
 // Updates the current todo and attaches into the DOM
 const handleUpdateTodo = (targetNode) => {
-  const { parentNode = null, previousSibling = null } = targetNode || {}
+  const { previousSibling = null } = targetNode || {}
 
-  const rootTodoNode = targetNode?.closest("div.todo-border")
+  const rootTodoNode = targetNode?.closest("li.todo-border")
 
-  if (validateInput(previousSibling.value) && rootTodoNode) {
-    const currentTodo = todos.find(
-      (todo) => todo.id === Number(rootTodoNode.getAttribute("data-id")),
-    )
+  const todoId = Number(rootTodoNode.getAttribute("data-id"))
+  if (validateInput(previousSibling.value) && todoId) {
+    const currentTodo = findTodo(todos, Number(todoId))
 
     if (currentTodo) {
       currentTodo.text = previousSibling.value
     }
-    render(todoWrapper)
+    todoWrapper.innerHTML = ""
+    render()
   }
 }
 
@@ -197,13 +198,14 @@ const handleAddTodo = () => {
     }
 
     todos.push(todo)
-    render(todoWrapper)
 
     cardContainer.classList.remove("d-none")
     cardContainer.classList.add("padding-xs")
+    noTodoText.classList.add("d-none")
     inputEl.value = ""
 
-    noTodoText.classList.add("d-none")
+    todoWrapper.innerHTML = ""
+    render()
   }
 }
 
@@ -219,25 +221,30 @@ const clearAllTodos = () => {
 
 // Delegated click listener to handle clicks on various todo nodes
 const handleOnTodoClick = (event) => {
-  const { tagName, id } = event.target
+  const { tagName, id, type } = event.target
 
-  if (tagName === "INPUT") {
+  if (tagName === "INPUT" && type === "checkbox") {
+    event.stopPropagation()
     return toggleTodoCompleted(event.target)
-  }
-  if (tagName === "BUTTON" && id === "delete-todo") {
-    return deleteTodo(event.target)
   }
 
   if (tagName === "BUTTON") {
+    if (id === "delete-todo") {
+      event.stopPropagation()
+      return deleteTodo(event.target)
+    }
     if (id === "edit-todo") {
+      event.stopPropagation()
       return renderUpdateTodoNodes(event.target)
     }
 
     if (id === "update-todo") {
+      event.stopPropagation()
       return handleUpdateTodo(event.target)
     }
 
     if (id === "sub-todo") {
+      event.stopPropagation()
       return renderCreateChildTodoNodes(event.target)
     }
 
@@ -249,17 +256,22 @@ const handleOnTodoClick = (event) => {
 
 // Renders todos into the DOM
 const render = (
-  parentNode,
+  parentNode = todoWrapper,
   items = todos,
   draggable = true,
-  hasChildTodos = true,
+  includeChildTodos = true,
 ) => {
   const docFragment = new DocumentFragment()
-  parentNode.innerHTML = ""
 
-  items.forEach((todo) =>
-    docFragment.appendChild(createTodoNodes(todo, draggable, hasChildTodos)),
-  )
+  items.forEach((todo) => {
+    const todoNode = createTodoNodes(todo, draggable, includeChildTodos)
+
+    if (todo?.children?.length) {
+      parentNode.innerHTML = ""
+      render(todoNode, todo.children, false, false)
+    }
+    docFragment.appendChild(todoNode)
+  })
   parentNode.appendChild(docFragment)
 }
 

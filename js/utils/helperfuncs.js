@@ -26,7 +26,8 @@ const findTodo = (todos = [], todoId) => {
   todos.forEach((todoItem) => {
     if (!searchedTodo && todoItem?.children?.length > 0) {
       searchedTodo = findTodo(todoItem.children, todoId)
-    } else {
+    }
+    if (todoItem.id === todoId) {
       searchedTodo = todoItem
     }
   })

@@ -31,11 +31,12 @@ const createTodoBase = (todo, props = {}) => {
       todos[currentTodoIdx] = todos[previousTodoIdx]
       todos[previousTodoIdx] = temp
 
-      render(todoWrapper)
+      todoWrapper.innerHTML = ""
+      render()
     }
   }
 
-  const todoRootEl = document.createElement("div")
+  const todoRootEl = document.createElement("li")
   todoRootEl.setAttribute("draggable", draggable)
   todoRootEl.classList.add.apply(todoRootEl.classList, [...classList])
 

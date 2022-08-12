@@ -1,4 +1,4 @@
-const createTodoRoot = (hasChildTodos = true) => {
+const createTodoRoot = (hasChildTodos = false) => {
   function onTodoMouseOver() {
     this.childNodes.forEach((node) => {
       if (node.id === "sub-todo") {
@@ -17,9 +17,12 @@ const createTodoRoot = (hasChildTodos = true) => {
 
   const todoEl = document.createElement("div")
   todoEl.classList.add("todo")
+
   if (hasChildTodos) {
     todoEl.addEventListener("mouseover", onTodoMouseOver)
     todoEl.addEventListener("mouseleave", onTodoMouseLeave)
+  } else {
+    todoEl.classList.add("sub-todo-wrapper")
   }
 
   return todoEl
